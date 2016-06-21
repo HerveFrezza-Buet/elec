@@ -7,7 +7,8 @@
 #include <iostream>
 #include <elec.hpp>
 
-#define VIEW_FILE "test-001.py"
+#define PREFIX    "test-001"
+#define VIEW_FILE  PREFIX ".py"
 
 #define RADIUS1 1.5
 #define RADIUS2 1.0
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
 
   if(generate_mode) {
     if(std::string(argv[1])=="movie")
-      display.make_movie_python(VIEW_FILE,true, "avconv", "", "", "", 25, "test.mp4", 300);
+      display.make_movie_python(VIEW_FILE,true, "avconv", "", "", "", 25, PREFIX ".mp4", 300);
     else
       display.make_python(VIEW_FILE,true); 
     return 0;                            
