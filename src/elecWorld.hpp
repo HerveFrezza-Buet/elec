@@ -24,14 +24,25 @@ namespace elec {
 
     World() : areas(), all(), wall(20), electrons(), protons() {}
 
-    Point move(const Point& e, const Point& E) {
-      return wall(e,e-E*all.mobility(e),[this](const Point& p) -> bool {
-	  return this->electrons_density(p,elecDENSITY_RADIUS) < this->all.max_density(p);
-	});
+    void move(Point& e, const Point& E) {
+      if(!wall(e,e-E*all.mobility(e),[this](const Point& p) -> bool {
+	    double max_density = this->all.max_density(p);
+	    if(max_density > 0)
+	      return this->electrons_density(p,max_density) < max_density;
+	    else
+	      return false;
+	  })) {
+	Point p;
+	do 
+	  p = shake(e,elecNOISE_RADIUS);
+	while(!(all.in(p)));
+	e = p;
+      }
     }
 
-    void move(const Point& E) {
-      for(auto& e : electrons) e = move(e,E);
+    template<typename Efunc>
+    void move(const Efunc& E) {
+      for(auto& e : electrons) move(e,E(e));
     }
 
     unsigned int operator+=(elec::AreaRef area) {
@@ -42,12 +53,12 @@ namespace elec {
     }
 
     // returns 1 for elecDENSITY electrons per m2.
-    double electrons_density(const Point& O, double r) {
-      double area = wall(O,r,[this](const Point& p) -> bool {return this->all.in(p);});
+    double electrons_density(const Point& O, double max_density) {
+      double r2 = elecDENSITY_ESTIMATION_NB/(max_density*elecPI*elecDENSITY);
+      double area = wall(O,r2,[this](const Point& p) -> bool {return this->all.in(p);});
       unsigned int nb = 0;
-      double r2 = r*r;
       for(auto& e : electrons) if(d2(O,e)<r2) ++nb;
-      return nb/area/elecDENSITY;
+      return nb/(area*elecDENSITY);
     }
 
     unsigned int add_protons_random(AreaRef a) {

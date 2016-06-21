@@ -157,7 +157,7 @@ namespace elec {
     os << "(" << p.first << "," << p.second << ")";
     return os;
   }
-  
+
   inline Point uniform(const Point& A, const Point& B) {
     Point d = {std::rand()/(RAND_MAX+1.0),
 	       std::rand()/(RAND_MAX+1.0)};
@@ -180,7 +180,15 @@ namespace elec {
   inline Point max(const Point& A, const Point& B) {
     return {std::max(A.x,B.x),std::max(A.y,B.y)};
   }
-
   
+  inline Point shake(const Point& A, double radius) {
+    Point p;
+    double r2 = radius*radius;
+    Point   R = {radius,radius};
+    do
+      p = uniform(A-R,A+R);
+    while(d2(p,A)>r2);
+    return p;
+  }
 
 }

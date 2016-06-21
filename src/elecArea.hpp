@@ -29,18 +29,17 @@ namespace elec {
 	    *(out++) = M;
 	}
       }
+
       // Allows to try lateral escape...
       out      = std::back_inserter(extras);
-      *(out++) = {-.5,-1/(nb_steps-1.0)};
-      *(out++) = { .5,-1/(nb_steps-1.0)};
 
       std::sort(pattern.begin(), pattern.end(),
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }
 
     template<typename InsideFunc>
-    double operator()(const Point& O, double r, const InsideFunc& inside) const {
-      double d = 2*r;
+    double operator()(const Point& O, double r2, const InsideFunc& inside) const {
+      double d = 2*std::sqrt(r2);
       auto f = [&O,d](const Point& M) -> Point {
 	return {M.x*d + O.x,
 		M.y*d + O.y};
@@ -50,12 +49,11 @@ namespace elec {
       for(auto& X : pattern) 
 	if(inside(f(X)))
 	  ++nb_in;
-
-      return 3.14159265358979323846*r*r*nb_in/(double)pattern.size();
+      return elecPI*r2*nb_in/(double)(pattern.size());
     }
 
     template<typename InsideFunc>
-    Point operator()(const Point& A, const Point& B, const InsideFunc& inside) const {
+    bool operator()(Point& A, const Point& B, const InsideFunc& inside) const {
       auto D = B-A;
       auto O = (A+B)*.5;
       auto f = [&O,&D](const Point& M) -> Point {
@@ -65,17 +63,21 @@ namespace elec {
 
       for(auto& X : pattern) {
 	auto XX = f(X);
-	if(inside(XX))
-	  return XX;
+	if(inside(XX)) {
+	  A = XX;
+	  return true;
+	}
       }
 
       for(auto& X : extras) {
 	auto XX = f(X);
-	if(inside(XX))
-	  return XX;
+	if(inside(XX)) {
+	  A = XX;
+	  return true;
+	}
       }
 
-      return A;
+      return false;
     }
   };
 

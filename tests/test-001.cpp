@@ -7,7 +7,7 @@
 #include <iostream>
 #include <elec.hpp>
 
-#define VIEW_FILE "test.py"
+#define VIEW_FILE "test-001.py"
 
 #define RADIUS1 1.5
 #define RADIUS2 1.0
@@ -16,11 +16,15 @@
 int main(int argc, char* argv[]) {
   if(argc != 2) {
     std::cout << "Usage : " << std::endl
-              << argv[0] << " generate" << std::endl
-              << argv[0] << " run | ./" << VIEW_FILE << std::endl;
+	      << std::endl
+              << argv[0] << " movie" << std::endl
+              << argv[0] << " display" << std::endl
+	      << "-----------------" << std::endl
+              << argv[0] << " run | ./" << VIEW_FILE << std::endl
+	      << std::endl;
     return 0;
   }
-  bool generate_mode = std::string(argv[1])=="generate";
+  bool generate_mode = std::string(argv[1])=="movie" || std::string(argv[1])=="display";
 
   std::vector<elec::Point> E = {{
       elec::Point(-.1,0),
@@ -29,7 +33,7 @@ int main(int argc, char* argv[]) {
       {.1,  0}
     }};
 
-  auto mat = elec::material(1,1,1);
+  auto mat = elec::material(1,1,.5);
 
   auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, mat);
   auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, mat);
@@ -50,16 +54,17 @@ int main(int argc, char* argv[]) {
   display()        += world.plot_electrons();
 
   if(generate_mode) {
-    display.make_movie_python(VIEW_FILE,true, "avconv", "", "", "", 25, "test.mp4", 300);
-    //display.make_python(VIEW_FILE,true); 
+    if(std::string(argv[1])=="movie")
+      display.make_movie_python(VIEW_FILE,true, "avconv", "", "", "", 25, "test.mp4", 300);
+    else
+      display.make_python(VIEW_FILE,true); 
     return 0;                            
   }    
 
   for(auto& e : E)
-    for(unsigned int i=0; i<80; ++i) {
+    for(unsigned int i=0; i<200; ++i) {
       std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
-      world.move(e);
-      std::cerr << i << std::endl;
+      world.move([e](const elec::Point&) -> elec::Point {return e;});
     }
   std::cout << ccmpl::stop;
   
