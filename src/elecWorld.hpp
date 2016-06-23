@@ -102,6 +102,14 @@ namespace elec {
       build_electrons(idf);
     }
 
+    void build_protons() {
+      for(auto& area : areas) 
+	if(area.second == 0) {
+	  auto p = std::back_inserter(protons);
+	  area.second = elec::add_particles_random(area.first,p);
+	}
+    }
+
     void build() {
       for(auto& area : areas) 
 	if(area.second == 0) {

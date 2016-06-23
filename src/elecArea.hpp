@@ -97,6 +97,58 @@ namespace elec {
 
   using AreaRef = std::shared_ptr<Area>;
 
+  class Translate : public Area {
+  public:
+    
+    AreaRef content;
+    Point t;
+    Point forward (const Point& p) const {return p+t;}
+    Point backward(const Point& p) const {return p-t;}
+    
+    Translate(AreaRef a, const Point& t) : Area(), content(a), t(t) {}
+    virtual ~Translate() {}
+
+    virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
+    virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
+    virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
+    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual std::pair<Point,Point> bbox        ()                 const override {
+      auto bb = content->bbox();
+      return {forward(bb.first),forward(bb.second)};
+    }
+  };
+
+  AreaRef translate(AreaRef a, const Point& t) {
+    return AreaRef(static_cast<Area*>(new Translate(a,t)));
+  }
+
+  class Vflip : public Area {
+  public:
+    
+    
+
+    AreaRef content;
+    double xx;
+    Point forward (const Point& p) const {return {xx - p.x, p.y};}
+    Point backward(const Point& p) const {return {xx - p.x, p.y};}
+    
+    Vflip(AreaRef a, double x) : Area(), content(a), xx(2*x) {}
+    virtual ~Vflip() {}
+
+    virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
+    virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
+    virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
+    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual std::pair<Point,Point> bbox        ()                 const override {
+      auto bb = content->bbox();
+      return {forward(bb.first),forward(bb.second)};
+    }
+  };
+
+  AreaRef vflip(AreaRef a, double x) {
+    return AreaRef(static_cast<Area*>(new Vflip(a,x)));
+  }
+
   class AreaSet : public Area {
   public:
     
@@ -177,15 +229,15 @@ namespace elec {
     Material material;
     Conductor(const Material& mat) : Area(), material(mat) {}
     virtual ~Conductor() {}
-    virtual double mobility(const Point& pos) const {
+    virtual double mobility(const Point& pos) const override {
       if(in(pos)) return material.mobility;
       return 0;
     };
-    virtual double density(const Point& pos) const {
+    virtual double density(const Point& pos) const override {
       if(in(pos)) return material.density;
       return 0;
     };
-    virtual double max_density(const Point& pos) const {
+    virtual double max_density(const Point& pos) const override {
       if(in(pos)) return material.max_density;
       return 0;
     };
@@ -198,8 +250,8 @@ namespace elec {
     double r2;
     Disk(const Point& O, double r, const Material& mat) : Conductor(mat), O(O), r(r), r2(r*r) {}
     virtual ~Disk() {}
-    virtual bool           in      (const Point& pos) const {return d2(pos,O)<=r2;}
-    std::pair<Point,Point> bbox    ()                 const {return {O-Point(r,r),O+Point(r,r)};}
+    virtual bool           in      (const Point& pos) const override {return d2(pos,O)<=r2;}
+    std::pair<Point,Point> bbox    ()                 const override {return {O-Point(r,r),O+Point(r,r)};}
   };
 
   AreaRef disk(const Point& O, double r, const Material& mat) {
@@ -211,8 +263,8 @@ namespace elec {
     Point min,max;
     Box(const Point& min, const Point& max, const Material& mat) : Conductor(mat), min(min), max(max) {}
     virtual ~Box() {}
-    virtual bool           in      (const Point& pos) const {return min <= pos && pos <= max;}
-    std::pair<Point,Point> bbox    ()                 const {return {min,max};}
+    virtual bool           in      (const Point& pos) const override {return min <= pos && pos <= max;}
+    std::pair<Point,Point> bbox    ()                 const override {return {min,max};}
   };
 
   AreaRef box(const Point& min, const Point& max, const Material& mat) {

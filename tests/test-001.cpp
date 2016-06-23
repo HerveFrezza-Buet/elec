@@ -7,25 +7,13 @@
 #include <iostream>
 #include <elec.hpp>
 
-#define PREFIX    "test-001"
-#define VIEW_FILE  PREFIX ".py"
 
 #define RADIUS1 1.5
 #define RADIUS2 1.0
 #define RADIUS3 0.2
 
 int main(int argc, char* argv[]) {
-  if(argc != 2) {
-    std::cout << "Usage : " << std::endl
-	      << std::endl
-              << argv[0] << " movie" << std::endl
-              << argv[0] << " display" << std::endl
-	      << "-----------------" << std::endl
-              << argv[0] << " run | ./" << VIEW_FILE << std::endl
-	      << std::endl;
-    return 0;
-  }
-  bool generate_mode = std::string(argv[1])=="movie" || std::string(argv[1])=="display";
+  elec::Main m(argc,argv,"test-001");
 
   std::vector<elec::Point> E = {{
       elec::Point(-.1,0),
@@ -39,7 +27,7 @@ int main(int argc, char* argv[]) {
   auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, mat);
   auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, mat);
   auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), mat);
-  auto group = elec::set({left,right,bar});
+  auto group = elec::set ({left,right,bar});
 
   elec::World world;
   auto group_idf = (world += group);
@@ -47,6 +35,7 @@ int main(int argc, char* argv[]) {
   world.add_electrons_random(left);
 
   auto display = ccmpl::layout(8.0, 4.0, {"#"}, ccmpl::RGB(1., 1., 1.));
+
   display.set_ratios({2.}, {1.});
   display().title   = "Test";    
   display()         = "equal";   
@@ -54,13 +43,7 @@ int main(int argc, char* argv[]) {
   display()        += world.plot_protons();
   display()        += world.plot_electrons();
 
-  if(generate_mode) {
-    if(std::string(argv[1])=="movie")
-      display.make_movie_python(VIEW_FILE,true, "avconv", "", "", "", 25, PREFIX ".mp4", 300);
-    else
-      display.make_python(VIEW_FILE,true); 
-    return 0;                            
-  }    
+  m.generate(display);
 
   for(auto& e : E)
     for(unsigned int i=0; i<200; ++i) {

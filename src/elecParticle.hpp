@@ -57,7 +57,7 @@ namespace elec {
     Point min,max;
     std::tie(min,max) = a->bbox();
     unsigned int nb_elems = 0;
-    unsigned int n = (unsigned int)(elecDENSITY*(max.x-min.x)*(max.y*-min.y)+.5);
+    unsigned int n = (unsigned int)(elecDENSITY*(max.x-min.x)*(max.y-min.y)+.5);
     for(unsigned int i = 0; i < n; ++i) {
       auto p = elec::uniform(min,max);
       if(elec::proba(a->density(p))) {
