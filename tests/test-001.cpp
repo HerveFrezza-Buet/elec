@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
       {.1,  0}
     }};
 
-  auto mat = elec::material(1,1,.5);
+  auto mat = elec::material(1,1,3);
 
   auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, mat);
   auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, mat);

@@ -122,17 +122,44 @@ namespace elec {
     return AreaRef(static_cast<Area*>(new Translate(a,t)));
   }
 
-  class Vflip : public Area {
+  class Hflip : public Area {
   public:
     
-    
-
     AreaRef content;
     double xx;
     Point forward (const Point& p) const {return {xx - p.x, p.y};}
     Point backward(const Point& p) const {return {xx - p.x, p.y};}
     
-    Vflip(AreaRef a, double x) : Area(), content(a), xx(2*x) {}
+    Hflip(AreaRef a, double x) : Area(), content(a), xx(2*x) {}
+    virtual ~Hflip() {}
+
+    virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
+    virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
+    virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
+    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual std::pair<Point,Point> bbox        ()                 const override {
+      auto bb   = content->bbox();
+      auto fmin = forward(bb.first);
+      auto fmax = forward(bb.second);
+      return {Point(fmax.x,fmin.y),Point(fmin.x,fmax.y)};
+    }
+  };
+
+  AreaRef hflip(AreaRef a, double x) {
+    return AreaRef(static_cast<Area*>(new Hflip(a,x)));
+  }
+
+
+
+  class Vflip : public Area {
+  public:
+    
+    AreaRef content;
+    double yy;
+    Point forward (const Point& p) const {return {p.x, yy - p.y};}
+    Point backward(const Point& p) const {return {p.x, yy - p.y};}
+    
+    Vflip(AreaRef a, double y) : Area(), content(a), yy(2*y) {}
     virtual ~Vflip() {}
 
     virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
@@ -140,14 +167,19 @@ namespace elec {
     virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
     virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
     virtual std::pair<Point,Point> bbox        ()                 const override {
-      auto bb = content->bbox();
-      return {forward(bb.first),forward(bb.second)};
+      auto bb   = content->bbox();
+      auto fmin = forward(bb.first);
+      auto fmax = forward(bb.second);
+      return {Point(fmin.x,fmax.y),Point(fmax.x,fmin.y)};
     }
   };
 
-  AreaRef vflip(AreaRef a, double x) {
-    return AreaRef(static_cast<Area*>(new Vflip(a,x)));
+  AreaRef vflip(AreaRef a, double y) {
+    return AreaRef(static_cast<Area*>(new Vflip(a,y)));
   }
+
+
+
 
   class AreaSet : public Area {
   public:

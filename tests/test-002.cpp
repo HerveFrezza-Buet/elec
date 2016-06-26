@@ -8,23 +8,28 @@
 #include <elec.hpp>
 
 
-#define RADIUS1 2
+#define RADIUS1 2.5
 #define RADIUS2 1.0
 #define RADIUS3 0.2
 #define RADIUS4 .75
 #define RADIUS5 (RADIUS2*2.5)
 
+#define OFFSET .3
+#define RADIUS6 (RADIUS3+OFFSET)
+
+#define LOW_DENSITY  .3
+#define LOW_MOBILITY .3
+
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"test-002");
 
-  auto ball  = elec::disk({0, 0}, RADIUS2, elec::metal());
-  auto lbar  = elec::box ({-RADIUS1, -RADIUS3}, {-RADIUS4, RADIUS3}, elec::metal());
-  auto rbar  = elec::box ({ RADIUS4, -RADIUS3}, { RADIUS1, RADIUS3}, elec::metal());
-  
-  auto lball = elec::translate(ball, {-RADIUS1, 0});
-  auto rball = elec::translate(ball, {-RADIUS1, 0});
-
+  auto lball  = elec::disk({-RADIUS1, 0}, RADIUS2, elec::metal());
+  auto lbar   = elec::box ({-RADIUS1, -RADIUS3}, {-RADIUS4, RADIUS3}, elec::metal());
   auto lbag   = elec::set({lball,lbar});
+
+  auto r_mat1  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(           1, LOW_DENSITY, LOW_DENSITY));
+  auto r_mat2  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY,           1,           1));
+  auto r_mat3  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY, LOW_DENSITY, LOW_DENSITY));
 
   elec::World world;
 
@@ -38,8 +43,14 @@ int main(int argc, char* argv[]) {
   auto blball_idf = (world += elec::translate(lball, {0, -RADIUS5}));
   world                    += elec::translate(lbar,  {0, -RADIUS5});
 
-  world += vflip(lbar,0);
+  auto rbag   = elec::hflip(lbag,0);
+  world += rbag;
+  world += elec::translate(rbag, {0,  RADIUS5});
+  world += elec::translate(rbag, {0, -RADIUS5});
 
+  world += elec::translate(r_mat1, {0,  RADIUS5});
+  world += r_mat2;
+  world += elec::translate(r_mat3, {0, -RADIUS5});
 
   world.build_protons();
   world.build_electrons(ulball_idf);
