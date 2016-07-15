@@ -3,6 +3,7 @@
 #include <utility>
 #include <elecPoint.hpp>
 #include <memory>
+#include <limits>
 #include <iterator>
 #include <initializer_list>
 
@@ -37,23 +38,11 @@ namespace elec {
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }
 
-    template<typename InsideFunc>
-    double operator()(const Point& O, double r2, const InsideFunc& inside) const {
-      double d = 2*std::sqrt(r2);
-      auto f = [&O,d](const Point& M) -> Point {
-	return {M.x*d + O.x,
-		M.y*d + O.y};
-      };
+    
 
-      unsigned int nb_in = 0;
-      for(auto& X : pattern) 
-	if(inside(f(X)))
-	  ++nb_in;
-      return elecPI*r2*nb_in/(double)(pattern.size());
-    }
-
-    template<typename InsideFunc>
-    bool operator()(Point& A, const Point& B, const InsideFunc& inside) const {
+    /* Tries to move... returns false if A has been kept constant. */
+    template<typename AllowedFunc>
+    bool operator()(Point& A, const Point& B, const AllowedFunc& allowed) const {
       auto D = B-A;
       auto O = (A+B)*.5;
       auto f = [&O,&D](const Point& M) -> Point {
@@ -63,7 +52,7 @@ namespace elec {
 
       for(auto& X : pattern) {
 	auto XX = f(X);
-	if(inside(XX)) {
+	if(allowed(XX)) {
 	  A = XX;
 	  return true;
 	}
@@ -71,7 +60,7 @@ namespace elec {
 
       for(auto& X : extras) {
 	auto XX = f(X);
-	if(inside(XX)) {
+	if(allowed(XX)) {
 	  A = XX;
 	  return true;
 	}
@@ -91,7 +80,7 @@ namespace elec {
     virtual bool                   in          (const Point& pos) const = 0;
     virtual double                 mobility    (const Point& pos) const = 0;
     virtual double                 density     (const Point& pos) const = 0;
-    virtual double                 max_density (const Point& pos) const = 0;
+    virtual double                 min_d2      (const Point& pos) const = 0;
     virtual std::pair<Point,Point> bbox        ()                 const = 0;
   };
 
@@ -111,7 +100,7 @@ namespace elec {
     virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
     virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
     virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
-    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual double                 min_d2      (const Point& pos) const override {return content->min_d2     (backward(pos));}
     virtual std::pair<Point,Point> bbox        ()                 const override {
       auto bb = content->bbox();
       return {forward(bb.first),forward(bb.second)};
@@ -136,7 +125,7 @@ namespace elec {
     virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
     virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
     virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
-    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual double                 min_d2      (const Point& pos) const override {return content->min_d2     (backward(pos));}
     virtual std::pair<Point,Point> bbox        ()                 const override {
       auto bb   = content->bbox();
       auto fmin = forward(bb.first);
@@ -165,7 +154,7 @@ namespace elec {
     virtual bool                   in          (const Point& pos) const override {return content->in         (backward(pos));}
     virtual double                 mobility    (const Point& pos) const override {return content->mobility   (backward(pos));}
     virtual double                 density     (const Point& pos) const override {return content->density    (backward(pos));}
-    virtual double                 max_density (const Point& pos) const override {return content->max_density(backward(pos));}
+    virtual double                 min_d2      (const Point& pos) const override {return content->min_d2     (backward(pos));}
     virtual std::pair<Point,Point> bbox        ()                 const override {
       auto bb   = content->bbox();
       auto fmin = forward(bb.first);
@@ -216,10 +205,10 @@ namespace elec {
       return res;
     }
 
-    virtual double max_density(const Point& pos) const override  {
-      double res = 0;
+    virtual double min_d2(const Point& pos) const override  {
+      double res = std::numeric_limits<double>::max();
       for(auto& e_ptr : areas)
-	res = std::max(res,e_ptr->max_density(pos));
+	res = std::min(res,e_ptr->min_d2(pos));
       return res;
     }
 
@@ -243,17 +232,17 @@ namespace elec {
   struct Material {
     double mobility    = 0;
     double density     = 0;
-    double max_density = 0;
-    Material(double mobility, double density, double max_density) 
-      : mobility(mobility), density(density), max_density(max_density) {}
+    double min_d2      = 0;
+    Material(double mobility, double density, double min_d) 
+      : mobility(mobility), density(density), min_d2(min_d*min_d) {}
     Material(const Material&) = default;
   };
 
-  inline Material metal() {return {1.0,1,100.};}
+  inline Material metal() {return {1.0,1,elecMETAL_MIN_DIST};}
   inline Material material(double mobility, 
 			   double density, 
-			   double max_density) {
-    return {mobility,density,max_density};
+			   double min_d2) {
+    return {mobility,density,min_d2};
   }
 
   class Conductor : public Area {
@@ -269,9 +258,9 @@ namespace elec {
       if(in(pos)) return material.density;
       return 0;
     };
-    virtual double max_density(const Point& pos) const override {
-      if(in(pos)) return material.max_density;
-      return 0;
+    virtual double min_d2(const Point& pos) const override {
+      if(in(pos)) return material.min_d2;
+      return std::numeric_limits<double>::max();
     };
   };
 

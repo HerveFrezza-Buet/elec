@@ -6,7 +6,7 @@
 
 #define elecDENSITY 100.0 // nb particules per m2 for a 1 density
 
-#define elecDENSITY_ESTIMATION_NB 4
+#define elecMETAL_MIN_DIST .01
 
 #define elecPI 3.14159265358979323846
 

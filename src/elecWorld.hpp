@@ -24,11 +24,20 @@ namespace elec {
 
     World() : areas(), all(), wall(20), electrons(), protons() {}
 
+
+    double closest_electron_d2(const Point& p) {
+      double res = std::numeric_limits<double>::max();
+      double d;
+      for(auto& e_pos : electrons) 
+	if((e_pos != p) && ((d = d2(e_pos,p)) < res))
+	  res = d;
+      return res;
+    }
+
     void move(Point& e, const Point& E) {
       if(!wall(e,e-E*all.mobility(e),[this](const Point& p) -> bool {
-	    double max_density = this->all.max_density(p);
-	    if(max_density > 0)
-	      return this->electrons_density(p,max_density) < max_density;
+	    if(this->all.in(p)) 
+	      return this->closest_electron_d2(p) > this->all.min_d2(p);
 	    else
 	      return false;
 	  })) {
@@ -50,15 +59,6 @@ namespace elec {
       areas.push_back({area,0});
       all += area;
       return res;
-    }
-
-    // returns 1 for elecDENSITY electrons per m2.
-    double electrons_density(const Point& O, double max_density) {
-      double r2 = elecDENSITY_ESTIMATION_NB/(max_density*elecPI*elecDENSITY);
-      double area = wall(O,r2,[this](const Point& p) -> bool {return this->all.in(p);});
-      unsigned int nb = 0;
-      for(auto& e : electrons) if(d2(O,e)<r2) ++nb;
-      return nb/(area*elecDENSITY);
     }
 
     unsigned int add_protons_random(AreaRef a) {
