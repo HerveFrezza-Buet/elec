@@ -1,8 +1,3 @@
-/*
-  
-  g++ -o test-001 test-001.cpp -I. `pkg-config --cflags --libs ccmpl`
-  
- */
 
 #include <iostream>
 #include <elec.hpp>
@@ -17,8 +12,9 @@
 #define OFFSET .3
 #define RADIUS6 (RADIUS3+OFFSET)
 
-#define LOW_DENSITY  .3
-#define LOW_MOBILITY .3
+#define HIGH_MIN_DIST  .2 // .1 is ok... why ?
+#define LOW_DENSITY    .3
+#define LOW_MOBILITY   .3
 
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"test-002");
@@ -27,9 +23,9 @@ int main(int argc, char* argv[]) {
   auto lbar   = elec::box ({-RADIUS1, -RADIUS3}, {-RADIUS4, RADIUS3}, elec::metal());
   auto lbag   = elec::set({lball,lbar});
 
-  auto r_mat1  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(           1, LOW_DENSITY, LOW_DENSITY));
-  auto r_mat2  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY,           1,           1));
-  auto r_mat3  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY, LOW_DENSITY, LOW_DENSITY));
+  auto r_mat1  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(           1, LOW_DENSITY, HIGH_MIN_DIST     ));
+  auto r_mat2  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY,           1, elecMETAL_MIN_DIST));
+  auto r_mat3  = elec::box({-RADIUS4, -RADIUS6}, {RADIUS4, RADIUS6}, elec::material(LOW_MOBILITY, LOW_DENSITY, HIGH_MIN_DIST     ));
 
   elec::World world;
 

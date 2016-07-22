@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 #include <iterator>
 
 #include <elecArea.hpp>
@@ -10,6 +11,7 @@
 #include <ccmpl.hpp>
 #include <algorithm>
 
+#include <iostream>
 
 namespace elec {
   
@@ -25,28 +27,58 @@ namespace elec {
     World() : areas(), all(), wall(20), electrons(), protons() {}
 
 
-    double closest_electron_d2(const Point& p) {
+    double closest_electron_d2(const Point& p, const Point& exclude) {
       double res = std::numeric_limits<double>::max();
       double d;
       for(auto& e_pos : electrons) 
-	if((e_pos != p) && ((d = d2(e_pos,p)) < res))
+	if((e_pos != exclude) && ((d = d2(e_pos,p)) < res))
 	  res = d;
       return res;
     }
 
     void move(Point& e, const Point& E) {
-      if(!wall(e,e-E*all.mobility(e),[this](const Point& p) -> bool {
-	    if(this->all.in(p)) 
-	      return this->closest_electron_d2(p) > this->all.min_d2(p);
-	    else
-	      return false;
-	  })) {
-	Point p;
-	do 
-	  p = shake(e,elecNOISE_RADIUS);
-	while(!(all.in(p)));
-	e = p;
+      
+
+      auto scored = wall(e,e-E*all.mobility(e),
+			 [this,e](const Point& p, double& sc) -> bool {
+			   if(this->all.in(p)) {
+			     sc = this->closest_electron_d2(p,e);
+			     return true;
+			   }
+			   else
+			     return false;
+			 });
+	
+
+
+
+      // Let us find the first fitting point, if any
+      for(auto& p_sc : scored)
+	if(p_sc.second > all.min_d2(p_sc.first)) {
+	  e = p_sc.first;
+	  return;
+	}
+
+      // Try to do better.
+      double closest_d2 = closest_electron_d2(e,e);
+
+      // No fitting point, let us move toward the best one.
+      if(scored.size() > 0) {
+	auto m = std::max_element(scored.begin(), scored.end(), 
+      				  [](const std::pair<Point,double>& p1,
+      				     const std::pair<Point,double>& p2) -> double {return p1.second < p2.second;});
+	if(m->second > closest_d2) {
+	  e = m->first;
+	  return;
+	}
       }
+
+      // // Do random.
+      // Point p;
+      // do 
+      //   p = shake(e,elecNOISE_RADIUS);
+      // while(!(all.in(p)));
+      // e = p;
     }
 
     template<typename Efunc>
@@ -59,6 +91,11 @@ namespace elec {
       areas.push_back({area,0});
       all += area;
       return res;
+    }
+
+    void add_electron(const Point& pos) {
+      auto e = std::back_inserter(electrons);
+      *(e++) = pos;
     }
 
     unsigned int add_protons_random(AreaRef a) {

@@ -1,8 +1,4 @@
-/*
-  
-  g++ -o test-001 test-001.cpp -I. `pkg-config --cflags --libs ccmpl`
-  
- */
+
 
 #include <iostream>
 #include <elec.hpp>
@@ -16,17 +12,15 @@ int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"test-001");
 
   std::vector<elec::Point> E = {{
-      elec::Point(-.1,0),
+      elec::Point(-.1, 0),
       { 0,-.1},
       {.1, .1},
       {.1,  0}
     }};
 
-  auto mat = elec::material(1,1,.05);
-
-  auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, mat);
-  auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, mat);
-  auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), mat);
+  auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, elec::metal());
+  auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, elec::metal());
+  auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), elec::metal());
   auto group = elec::set ({left,right,bar});
 
   elec::World world;

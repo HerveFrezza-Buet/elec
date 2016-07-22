@@ -13,7 +13,6 @@ namespace elec {
   private:
 
     std::vector<Point> pattern;
-    std::vector<Point> extras;
 
   public:
 
@@ -30,19 +29,20 @@ namespace elec {
 	    *(out++) = M;
 	}
       }
-
-      // Allows to try lateral escape...
-      out      = std::back_inserter(extras);
-
       std::sort(pattern.begin(), pattern.end(),
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }
 
     
 
-    /* Tries to move... returns false if A has been kept constant. */
-    template<typename AllowedFunc>
-    bool operator()(Point& A, const Point& B, const AllowedFunc& allowed) const {
+    /* Tries to move... Return each motion with a score.
+       double sc; if(score(x,sc) register x;*/
+    template<typename ScoreFunc>
+    std::vector<std::pair<Point,double>> operator()(const Point& A, const Point& B, const ScoreFunc& score) const {
+      std::vector<std::pair<Point,double>> res;
+      auto out = std::back_inserter(res);
+      double score_value;
+
       auto D = B-A;
       auto O = (A+B)*.5;
       auto f = [&O,&D](const Point& M) -> Point {
@@ -52,21 +52,11 @@ namespace elec {
 
       for(auto& X : pattern) {
 	auto XX = f(X);
-	if(allowed(XX)) {
-	  A = XX;
-	  return true;
-	}
+	if(score(XX,score_value))
+	  *(out++) = {XX,score_value};
       }
 
-      for(auto& X : extras) {
-	auto XX = f(X);
-	if(allowed(XX)) {
-	  A = XX;
-	  return true;
-	}
-      }
-
-      return false;
+      return res;
     }
   };
 
