@@ -22,6 +22,14 @@ namespace elec {
     std::vector<elec::Point> electrons;
     std::vector<elec::Point> protons;
     
+    void nosify(Point& e) {
+      Point p;
+      do 
+        p = shake(e,elecNOISE_RADIUS);
+      while(!(all.in(p)));
+      e = p;
+    }
+
   public:
 
     World() : areas(), all(), wall(20), electrons(), protons() {}
@@ -52,10 +60,20 @@ namespace elec {
 
 
 
+      // // Let us find the first fitting point, if any
+      // for(auto& p_sc : scored)
+      // 	if(p_sc.second > all.min_d2(p_sc.first)) {
+      // 	  e = p_sc.first;
+      // 	  // nosify(e);
+      // 	  return;
+      // 	}
+
       // Let us find the first fitting point, if any
+      double min_d2_e = all.min_d2(e);
       for(auto& p_sc : scored)
-	if(p_sc.second > all.min_d2(p_sc.first)) {
+	if(p_sc.second > min_d2_e) {
 	  e = p_sc.first;
+	  // nosify(e);
 	  return;
 	}
 
@@ -69,16 +87,13 @@ namespace elec {
       				     const std::pair<Point,double>& p2) -> double {return p1.second < p2.second;});
 	if(m->second > closest_d2) {
 	  e = m->first;
+	  // nosify(e);
 	  return;
 	}
       }
 
-      // // Do random.
-      // Point p;
-      // do 
-      //   p = shake(e,elecNOISE_RADIUS);
-      // while(!(all.in(p)));
-      // e = p;
+      nosify(e);
+      
     }
 
     template<typename Efunc>

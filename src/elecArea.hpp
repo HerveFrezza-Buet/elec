@@ -19,16 +19,21 @@ namespace elec {
     Wall(unsigned int nb_steps) {
       Point O = {0,0};
       Point M;
-      if(nb_steps % 2 == 0) ++nb_steps; // the point (1,0) is thus in the pattern
+      if(nb_steps % 2 == 0) ++nb_steps; // nb_steps is odd.
+      unsigned int half_step = nb_steps/2;
+      double coef = 1/(nb_steps-1.0);
       auto out = std::back_inserter(pattern);
       for(unsigned int x = 0; x < nb_steps; ++x) {
-	M.x = -.5+x/(nb_steps-1.0);
+	M.x = -.5+x*coef;
 	for(unsigned int y = 0; y < nb_steps; ++y) {
-	  M.y = -.5+y/(nb_steps-1.0);
-	  if(d2(M,O)<=.5*.5)
-	    *(out++) = M;
+	  if(y != half_step || x != 0) { // let us avoid the leftmost point (i.e. no motion). 
+	    M.y = -.5+y*coef;
+	    if(d2(M,O)<=.5*.5)
+	      *(out++) = M;
+	  }
 	}
       }
+
       std::sort(pattern.begin(), pattern.end(),
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }

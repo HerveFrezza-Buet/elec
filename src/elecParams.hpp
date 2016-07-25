@@ -10,4 +10,4 @@
 
 #define elecPI 3.14159265358979323846
 
-#define elecNOISE_RADIUS .05
+#define elecNOISE_RADIUS .01

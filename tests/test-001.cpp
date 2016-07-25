@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   m.generate(display);
 
   for(auto& e : E)
-    for(unsigned int i=0; i<200; ++i) {
+    for(unsigned int i=0; i<250; ++i) {
       std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
       world.move([e](const elec::Point&) -> elec::Point {return e;});
     }

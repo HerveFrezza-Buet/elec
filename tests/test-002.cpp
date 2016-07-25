@@ -3,10 +3,10 @@
 #include <elec.hpp>
 
 
-#define RADIUS1 2.5
+#define RADIUS1 3
 #define RADIUS2 1.0
 #define RADIUS3 0.2
-#define RADIUS4 .75
+#define RADIUS4 1.2
 #define RADIUS5 (RADIUS2*2.5)
 
 #define OFFSET .3
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
   m.generate(display);
 
-  for(unsigned int i=0; i<200; ++i) {
+  for(unsigned int i=0; i<500; ++i) {
       std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
       world.move([](const elec::Point&) -> elec::Point {return {-.1,0};});
     }
