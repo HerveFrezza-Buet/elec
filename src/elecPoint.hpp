@@ -181,13 +181,15 @@ namespace elec {
     return {std::max(A.x,B.x),std::max(A.y,B.y)};
   }
   
-  inline Point shake(const Point& A, double radius) {
+  inline Point shake(const Point& A, double radius_max, double radius2_min, double radius2_max) {
     Point p;
-    double r2 = radius*radius;
-    Point   R = {radius,radius};
-    do
-      p = uniform(A-R,A+R);
-    while(d2(p,A)>r2);
+    Point   R = {radius_max,radius_max};
+    double d_2;
+    do {
+      p  = uniform(A-R,A+R);
+      d_2 = d2(p,A);
+    }
+    while(d_2>radius2_max || d_2<radius2_min);
     return p;
   }
 

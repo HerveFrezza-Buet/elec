@@ -24,10 +24,18 @@ namespace elec {
     
     void noisify(Point& e) {
       Point p;
-      do 
-        p = shake(e,elecNOISE_RADIUS);
-      while(!(all.in(p)));
-      e = p;
+      unsigned int nb = 0;
+      do  {
+        p = shake(e,
+		  elecNOISE_RADIUS_MAX,
+		  elecNOISE_RADIUS_MIN*elecNOISE_RADIUS_MIN,
+		  elecNOISE_RADIUS_MAX*elecNOISE_RADIUS_MAX);
+	++nb;
+      }
+      while(!(all.in(p)) && nb < elecNOISE_NB_TRIES_INSIDE);
+      
+      if(nb < elecNOISE_NB_TRIES_INSIDE)
+	e = p;
     }
 
   public:
