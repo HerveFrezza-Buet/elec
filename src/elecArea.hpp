@@ -33,12 +33,7 @@ namespace elec {
 	  }
 	}
       }
-      
-      for(unsigned int y = 1; y <= elecNB_LATERAL_ESCAPE; ++y) {
-	*(out++) = {0, -y*coef};
-	*(out++) = {0,  y*coef};
-      }
-      
+            
       std::sort(pattern.begin(), pattern.end(),
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }

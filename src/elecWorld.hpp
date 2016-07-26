@@ -22,7 +22,7 @@ namespace elec {
     std::vector<elec::Point> electrons;
     std::vector<elec::Point> protons;
     
-    void nosify(Point& e) {
+    void noisify(Point& e) {
       Point p;
       do 
         p = shake(e,elecNOISE_RADIUS);
@@ -57,38 +57,65 @@ namespace elec {
 			     return false;
 			 });
 	
+      bool ee_found = false;
+      Point ee;
+      double min_d2_e = 0;
+      std::pair<Point,double> closest_d2 = {Point(0,0),0};
 
       // Let us find the first fitting point, if any
-      double min_d2_e = all.min_d2(e);
-      for(auto& p_sc : scored)
-	if(p_sc.second.second > min_d2_e) {
-	  e = p_sc.first;
-	  // nosify(e);
-	  return;
-	}
-
-      // Try to do better.
+      if(!ee_found)  {
+	min_d2_e = all.min_d2(e);
+	for(auto& p_sc : scored)
+	  if(p_sc.second.second > min_d2_e) {
+	    ee = p_sc.first;
+	    ee_found = true;
+	    break;
+	  }
+      }
      
 
       // No fitting point, let us move toward the best one. 
-
-      std::pair<Point,double> closest_d2 = closest_electron_d2(e,e);
-      if(scored.size() > 0) {
-      	auto m = std::max_element(scored.begin(), scored.end(), 
-      				  [](const std::pair<Point,std::pair<Point,double>>& p1,
-      				     const std::pair<Point,std::pair<Point,double>>& p2) -> double {return p1.second.second < p2.second.second;});
-      	if(m->second.second > closest_d2.second) {
-	  auto d1 = m->second.first - m->first;
-	  auto d2 = closest_d2.first - e;
-	  if(d1*d2 > 0)  {// the closest is not toward the current motion
-	    e = m->first;
-	    // nosify(e);
-	    return;
+      
+      if(!ee_found)  {
+	closest_d2 = closest_electron_d2(e,e);
+	if(scored.size() > 0) {
+	  auto m = std::max_element(scored.begin(), scored.end(), 
+				    [](const std::pair<Point,std::pair<Point,double>>& p1,
+				       const std::pair<Point,std::pair<Point,double>>& p2) -> double {return p1.second.second < p2.second.second;});
+	  if(m->second.second > closest_d2.second) {
+	    auto d1 = m->second.first - m->first;
+	    auto d2 = closest_d2.first - e;
+	    if(d1*d2 > 0)  {// the closest is not toward the current motion
+	      ee       = m->first;
+	      ee_found = true;
+	    }
 	  }
-      	}
+	}
       }
 
-      // nosify(e);
+      if(!ee_found) {
+	ee = e;
+	ee_found = true;
+      }
+
+      // Let us noisify the position
+      for(unsigned i=0; i< elecNB_NOISE_TRIES; ++i) {
+	auto p =  ee;
+	noisify(p);
+	if(all.in(p)) {
+	  auto closest_p = closest_electron_d2(p,e);
+	  if(closest_p.second > closest_d2.second) {
+	    auto d1 = closest_p.first - p;
+	    auto d2 = closest_d2.first - e;
+	    if(d1*d2 > 0)  {// the closest is not toward the current motion
+	      ee = p;
+	      break;
+	    }
+	  }
+	}
+      }
+
+      e = ee;
       
     }
 
