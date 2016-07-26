@@ -12,14 +12,14 @@
 #define OFFSET .3
 #define RADIUS6 (RADIUS3+OFFSET)
 
-#define HIGH_MIN_DIST  .2 // .1 is ok... why ?
+#define HIGH_MIN_DIST  .2 
 #define LOW_DENSITY    .3
 #define LOW_MOBILITY   .3
 
 
 #define MODULE_UP
-#define MODULE_MIDDLE
-#define MODULE_DOWN
+//#define MODULE_MIDDLE
+//#define MODULE_DOWN
 
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"test-002");

@@ -33,20 +33,25 @@ namespace elec {
 	  }
 	}
       }
-
+      
+      for(unsigned int y = 1; y <= elecNB_LATERAL_ESCAPE; ++y) {
+	*(out++) = {0, -y*coef};
+	*(out++) = {0,  y*coef};
+      }
+      
       std::sort(pattern.begin(), pattern.end(),
 		[](const Point& A, const Point& B) -> bool {return d2({-.5,0.0},A) > d2({-.5,0.0},B);});
     }
 
     
 
-    /* Tries to move... Return each motion with a score.
-       double sc; if(score(x,sc) register x;*/
+    /* Tries to move... Return each motion with a (point,score) pair.
+       std::pair<Point,double> sc; if(score(x,sc) register x;*/
     template<typename ScoreFunc>
-    std::vector<std::pair<Point,double>> operator()(const Point& A, const Point& B, const ScoreFunc& score) const {
-      std::vector<std::pair<Point,double>> res;
+    std::vector<std::pair<Point,std::pair<Point,double>>> operator()(const Point& A, const Point& B, const ScoreFunc& score) const {
+      std::vector<std::pair<Point,std::pair<Point,double>>> res;
       auto out = std::back_inserter(res);
-      double score_value;
+      std::pair<Point,double> score_value;
 
       auto D = B-A;
       auto O = (A+B)*.5;

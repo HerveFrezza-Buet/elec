@@ -35,12 +35,12 @@ namespace elec {
     World() : areas(), all(), wall(20), electrons(), protons() {}
 
 
-    double closest_electron_d2(const Point& p, const Point& exclude) {
-      double res = std::numeric_limits<double>::max();
+    std::pair<Point,double> closest_electron_d2(const Point& p, const Point& exclude) {
+      std::pair<Point,double> res = {Point(0,0),std::numeric_limits<double>::max()};
       double d;
       for(auto& e_pos : electrons) 
-	if((e_pos != exclude) && ((d = d2(e_pos,p)) < res))
-	  res = d;
+	if((e_pos != exclude) && ((d = d2(e_pos,p)) < res.second))
+	  res = {e_pos,d};
       return res;
     }
 
@@ -48,7 +48,7 @@ namespace elec {
       
 
       auto scored = wall(e,e-E*all.mobility(e),
-			 [this,e](const Point& p, double& sc) -> bool {
+			 [this,e](const Point& p, std::pair<Point,double>& sc) -> bool {
 			   if(this->all.in(p)) {
 			     sc = this->closest_electron_d2(p,e);
 			     return true;
@@ -58,41 +58,37 @@ namespace elec {
 			 });
 	
 
-
-
-      // // Let us find the first fitting point, if any
-      // for(auto& p_sc : scored)
-      // 	if(p_sc.second > all.min_d2(p_sc.first)) {
-      // 	  e = p_sc.first;
-      // 	  // nosify(e);
-      // 	  return;
-      // 	}
-
       // Let us find the first fitting point, if any
       double min_d2_e = all.min_d2(e);
       for(auto& p_sc : scored)
-	if(p_sc.second > min_d2_e) {
+	if(p_sc.second.second > min_d2_e) {
 	  e = p_sc.first;
 	  // nosify(e);
 	  return;
 	}
 
       // Try to do better.
-      double closest_d2 = closest_electron_d2(e,e);
+     
 
-      // No fitting point, let us move toward the best one.
+      // No fitting point, let us move toward the best one. 
+
+      std::pair<Point,double> closest_d2 = closest_electron_d2(e,e);
       if(scored.size() > 0) {
-	auto m = std::max_element(scored.begin(), scored.end(), 
-      				  [](const std::pair<Point,double>& p1,
-      				     const std::pair<Point,double>& p2) -> double {return p1.second < p2.second;});
-	if(m->second > closest_d2) {
-	  e = m->first;
-	  // nosify(e);
-	  return;
-	}
+      	auto m = std::max_element(scored.begin(), scored.end(), 
+      				  [](const std::pair<Point,std::pair<Point,double>>& p1,
+      				     const std::pair<Point,std::pair<Point,double>>& p2) -> double {return p1.second.second < p2.second.second;});
+      	if(m->second.second > closest_d2.second) {
+	  auto d1 = m->second.first - m->first;
+	  auto d2 = closest_d2.first - e;
+	  if(d1*d2 > 0)  {// the closest is not toward the current motion
+	    e = m->first;
+	    // nosify(e);
+	    return;
+	  }
+      	}
       }
 
-      nosify(e);
+      // nosify(e);
       
     }
 
