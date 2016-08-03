@@ -18,8 +18,8 @@
 
 
 #define MODULE_UP
-// #define MODULE_MIDDLE
-// #define MODULE_DOWN
+#define MODULE_MIDDLE
+#define MODULE_DOWN
 
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"test-002");
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 
   m.generate(display);
 
-  for(unsigned int i=0; i<1000; ++i) {
+  for(unsigned int i=0; i<1500; ++i) {
       std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
       world.move([](const elec::Point&) -> elec::Point {return {-.1,0};});
       std::cerr << i << "     \r" << std::flush;
