@@ -114,7 +114,7 @@ namespace elec {
     }
 
     Point operator/(double a) const {
-      return {x/a, y/a};
+      return (*this)*(1/a);
     }
 
     Point& operator+=(const Point& p) {
@@ -136,8 +136,7 @@ namespace elec {
     }
   
     Point& operator/=(double a) {
-      x /= a;
-      y /= a;
+      (*this)*=(1/a);
       return *this;
     }
 
@@ -145,6 +144,10 @@ namespace elec {
       return ccmpl::Point(x,y);
     }
   };
+
+  inline elec::Point operator*(double a, const elec::Point p) {
+    return p*a;
+  }
 
   inline std::ostream& operator<<(std::ostream& os, 
 				  const Point& p) {

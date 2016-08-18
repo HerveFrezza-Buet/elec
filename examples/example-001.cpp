@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   elec::World world;
   auto group_idf = (world += group);
   world.build_protons(group_idf);
-  world.add_electrons_random(left);
+  world.add_electrons_random(left, 1000);
 
   auto display = ccmpl::layout(8.0, 4.0, {"#"}, ccmpl::RGB(1., 1., 1.));
 
@@ -32,9 +32,10 @@ int main(int argc, char* argv[]) {
 
   m.generate(display);
 
-  for(unsigned int i=0; i<500; ++i) {
+  while(true) {
     std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
-    world.move([](const elec::Point&) -> elec::Point {return {-.1,0.};});
+    world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
+    std::cerr << "E(0,0) = " << world.E(elec::Point(0,0)) << std::endl;
   }
   std::cout << ccmpl::stop;
   

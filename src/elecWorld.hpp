@@ -127,6 +127,12 @@ namespace elec {
       
     }
 
+    Point E(const Point& pos) {
+      return elecELEMENTARY_CHARGE
+	* (elec::E(protons.begin(), protons.end(), pos)
+	   - elec::E(electrons.begin(), electrons.end(), pos));
+    }
+
     template<typename Efunc>
     void move(const Efunc& E) {
       for(auto& e : electrons) move(e,E(e));
