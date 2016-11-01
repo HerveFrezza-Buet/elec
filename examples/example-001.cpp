@@ -9,6 +9,7 @@
 #define RADIUS3 0.2
 
 #define NB_STEPS     1000
+#define NB_SUBSTEPS     2
 #define NB_ELECTRONS 1500
 
 int main(int argc, char* argv[]) {
@@ -38,7 +39,8 @@ int main(int argc, char* argv[]) {
   for(unsigned int step = 0; step < NB_STEPS; ++step) {
     std::cerr << std::setw(5) << step+1 << "/" << NB_STEPS << "    \r" << std::flush;
     std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
-    world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
+    for(unsigned int substep = 0; substep < NB_SUBSTEPS; ++substep)
+      world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
   }
   std::cerr << std::endl;
   std::cout << ccmpl::stop;
