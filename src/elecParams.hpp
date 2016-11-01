@@ -9,11 +9,11 @@
 
 #define elecPI 3.14159265358979323846
 
-#define elecNOISE_RADIUS_MIN .01
-#define elecNOISE_RADIUS_MAX .02 
-#define elecNB_NOISE_TRIES 10
-#define elecNOISE_NB_TRIES_INSIDE 50
+#define elecNOISE_RADIUS_MIN .001
+#define elecNOISE_RADIUS_MAX .002
+#define elecNB_NOISE_TRIES 5
+#define elecNOISE_NB_TRIES_INSIDE 10
 
 #define elecELEMENTARY_CHARGE 1e-2
 
-#define elecMAX_VARIATION .1
+#define elecMAX_VARIATION .03
