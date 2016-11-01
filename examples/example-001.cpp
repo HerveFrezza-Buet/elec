@@ -8,6 +8,8 @@
 #define RADIUS2 1.0
 #define RADIUS3 0.2
 
+#define NB_STEPS 300
+
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"example-001");
 
@@ -19,7 +21,7 @@ int main(int argc, char* argv[]) {
   elec::World world;
   auto group_idf = (world += group);
   world.build_protons(group_idf);
-  world.add_electrons_random(left, 1000);
+  world.add_electrons_random(left, 2000);
 
   auto display = ccmpl::layout(8.0, 4.0, {"#"}, ccmpl::RGB(1., 1., 1.));
 
@@ -32,10 +34,12 @@ int main(int argc, char* argv[]) {
 
   m.generate(display);
 
-  while(true) {
+  for(unsigned int step = 0; step < 300; ++step) {
+    std::cerr << std::setw(5) << step+1 << "/" << NB_STEPS << "    \r" << std::flush;
     std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
     world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
   }
+  std::cerr << std::endl;
   std::cout << ccmpl::stop;
   
   return 0;
