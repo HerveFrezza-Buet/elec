@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, elec::metal());
   auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, elec::metal());
   auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), elec::metal());
-  auto group = elec::set ({left,right,bar});
+  auto group = elec::set ({left,bar,right});
 
   elec::World world;
   auto group_idf = (world += group);
@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
   while(true) {
     std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
     world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
-    std::cerr << "E(0,0) = " << world.E(elec::Point(0,0)) << std::endl;
   }
   std::cout << ccmpl::stop;
   

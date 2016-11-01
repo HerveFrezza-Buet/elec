@@ -14,4 +14,6 @@
 #define elecNB_NOISE_TRIES 10
 #define elecNOISE_NB_TRIES_INSIDE 50
 
-#define elecELEMENTARY_CHARGE 1e-4
+#define elecELEMENTARY_CHARGE 1e-2
+
+#define elecMAX_VARIATION .1

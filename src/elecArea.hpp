@@ -43,7 +43,14 @@ namespace elec {
     /* Tries to move... Return each motion with a (point,score) pair.
        std::pair<Point,double> sc; if(score(x,sc) register x;*/
     template<typename ScoreFunc>
-    std::vector<std::pair<Point,std::pair<Point,double>>> operator()(const Point& A, const Point& B, const ScoreFunc& score) const {
+    std::vector<std::pair<Point,std::pair<Point,double>>> operator()(const Point& A, const Point& BB, const ScoreFunc& score) const {
+      double norm_dd_2 = d2(A,BB);
+      Point B;
+      if(norm_dd_2 < elecMAX_VARIATION*elecMAX_VARIATION)
+	B = BB;
+      else
+	B = A+(*(BB-A))*elecMAX_VARIATION;
+	
       std::vector<std::pair<Point,std::pair<Point,double>>> res;
       auto out = std::back_inserter(res);
       std::pair<Point,double> score_value;

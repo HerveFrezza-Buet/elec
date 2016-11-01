@@ -53,8 +53,6 @@ namespace elec {
     }
 
     void move(Point& e, const Point& E) {
-      
-
       auto scored = wall(e,e-E*all.mobility(e),
 			 [this,e](const Point& p, std::pair<Point,double>& sc) -> bool {
 			   if(this->all.in(p)) {
