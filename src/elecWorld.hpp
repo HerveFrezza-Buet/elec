@@ -216,15 +216,17 @@ namespace elec {
     }
 
     ccmpl::chart::Limits2d limits(double margin) {
-      elec::AreaSet areaset;
-      for(auto& area : areas) 
-	areaset += area.first;
-      auto bbox = areaset.bbox();
-      elec::Point m(margin,margin);
-      bbox.first  -= m;
-      bbox.second += m;
-      limits2d = {bbox.first.x, bbox.second.x, bbox.first.y, bbox.second.y};
-      limits2d_computed = true;
+      if(!limits2d_computed) {
+	elec::AreaSet areaset;
+	for(auto& area : areas) 
+	  areaset += area.first;
+	auto bbox = areaset.bbox();
+	elec::Point m(margin,margin);
+	bbox.first  -= m;
+	bbox.second += m;
+	limits2d = {bbox.first.x, bbox.second.x, bbox.first.y, bbox.second.y};
+	limits2d_computed = true;
+      }
       return limits2d;
     }
 
@@ -266,6 +268,22 @@ namespace elec {
 				 for(auto x : ccmpl::range(xmin, xmax, nb_x))
 				   *(outz++) = V(Point(x,y));
 			     });
+    }
+    
+    ccmpl::Vectors plot_E(double coef, unsigned int nb_X, unsigned int nb_Y) {
+      if(!limits2d_computed)
+	throw std::runtime_error("plot_E requires the limits to be computed");
+      return ccmpl::vectors("zorder=1,color='blue',pivot='tail',scale=1.0",
+			    [this, coef, nb_X, nb_Y](std::vector<std::pair<ccmpl::Point,ccmpl::Point>>& vectors) {
+			      vectors.clear();
+			      auto outv = std::back_inserter(vectors);
+			      for(auto y : ccmpl::range(this->limits2d.ymin, this->limits2d.ymax, nb_Y))
+				for(auto x : ccmpl::range(this->limits2d.xmin, this->limits2d.xmax, nb_X)) {
+				  auto p = Point(x,y);
+				  if(!(this->all.in(p)))
+				    *(outv++) = {Point(x,y),E(Point(x,y))*coef};
+				}
+			    });
     }
   };
 }

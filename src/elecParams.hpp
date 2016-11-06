@@ -2,7 +2,7 @@
 
 
 /* E=cst for d <= E-RADIUS */
-#define elecMIN_E_RADIUS         1e-3
+#define elecMIN_E_RADIUS         5e-2
 #define elecDENSITY 100.0 // nb particules per m2 for a 1 density
 
 #define elecMETAL_MIN_DIST .03
