@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 				   PLOT_V_NB_X,
 				   PLOT_V_NB_Y);   flags += '#';
   display++;
-  display().title   = "Outer electric field";    
+  display().title   = "Electric field";    
   display()         = "equal";   
   display()         = ccmpl::show_tics(false,false); 
   display()         = world.limits(MARGIN);
