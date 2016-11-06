@@ -270,17 +270,17 @@ namespace elec {
 			     });
     }
     
-    ccmpl::Vectors plot_E(double coef, unsigned int nb_X, unsigned int nb_Y) {
+    ccmpl::Vectors plot_E(double coef, unsigned int nb_X, unsigned int nb_Y, bool plot_inside) {
       if(!limits2d_computed)
 	throw std::runtime_error("plot_E requires the limits to be computed");
       return ccmpl::vectors("zorder=1,color='blue',pivot='tail',scale=1.0",
-			    [this, coef, nb_X, nb_Y](std::vector<std::pair<ccmpl::Point,ccmpl::Point>>& vectors) {
+			    [this, coef, nb_X, nb_Y, plot_inside](std::vector<std::pair<ccmpl::Point,ccmpl::Point>>& vectors) {
 			      vectors.clear();
 			      auto outv = std::back_inserter(vectors);
 			      for(auto y : ccmpl::range(this->limits2d.ymin, this->limits2d.ymax, nb_Y))
 				for(auto x : ccmpl::range(this->limits2d.xmin, this->limits2d.xmax, nb_X)) {
 				  auto p = Point(x,y);
-				  if(!(this->all.in(p)))
+				  if(plot_inside || !(this->all.in(p)))
 				    *(outv++) = {Point(x,y),E(Point(x,y))*coef};
 				}
 			    });

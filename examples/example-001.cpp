@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   display()         = "equal";   
   display()         = ccmpl::show_tics(false,false); 
   display()         = world.limits(MARGIN);
-  display()        += world.plot_E(PLOT_E_COEF,PLOT_E_NB_X,PLOT_E_NB_X); flags += '#';
+  display()        += world.plot_E(PLOT_E_COEF,PLOT_E_NB_X,PLOT_E_NB_X, true); flags += '#';
     
 
   m.generate(display);
