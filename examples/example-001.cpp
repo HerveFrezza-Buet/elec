@@ -10,7 +10,7 @@
 #define MARGIN  1.0
 
 #define NB_STEPS       1000
-#define NB_SUBSTEPS       3
+#define NB_SUBSTEPS       2
 #define ELECTRONS_RATIO   2
 
 #define PLOT_V_MIN      -10
