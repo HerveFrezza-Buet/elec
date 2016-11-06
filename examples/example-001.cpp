@@ -10,7 +10,13 @@
 
 #define NB_STEPS     1000
 #define NB_SUBSTEPS     2
-#define NB_ELECTRONS 1500
+#define ELECTRONS_RATIO 2
+
+#define PLOT_V_MIN      -10
+#define PLOT_V_MAX        0
+#define PLOT_V_NB_ISO    10
+#define PLOT_V_NB_X      60
+#define PLOT_V_NB_Y      30
 
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"example-001");
@@ -23,22 +29,29 @@ int main(int argc, char* argv[]) {
   elec::World world;
   auto group_idf = (world += group);
   world.build_protons(group_idf);
-  world.add_electrons_random(left, NB_ELECTRONS);
+  world.add_electrons_random(left, ELECTRONS_RATIO * world.nb_protons(group_idf));
 
   auto display = ccmpl::layout(8.0, 4.0, {"#"}, ccmpl::RGB(1., 1., 1.));
 
+  std::string flags;
   display.set_ratios({2.}, {1.});
   display().title   = "Example 001";    
   display()         = "equal";   
+  display()         = ccmpl::show_tics(false,false); 
   display()         = world.limits(1);    
-  display()        += world.plot_protons();
-  display()        += world.plot_electrons();
+  display()        += world.plot_protons();             flags += '#';
+  display()        += world.plot_electrons();           flags += '#';
+  display()        += world.plot_V(PLOT_V_MIN,
+				   PLOT_V_MAX,
+				   PLOT_V_NB_ISO,
+				   PLOT_V_NB_X,
+				   PLOT_V_NB_Y);        flags += '#';
 
   m.generate(display);
 
   for(unsigned int step = 0; step < NB_STEPS; ++step) {
     std::cerr << std::setw(5) << step+1 << "/" << NB_STEPS << "    \r" << std::flush;
-    std::cout << display("##",ccmpl::nofile() , ccmpl::nofile());
+    std::cout << display(flags, ccmpl::nofile() , ccmpl::nofile());
     for(unsigned int substep = 0; substep < NB_SUBSTEPS; ++substep)
       world.move([&world](const elec::Point& p) -> elec::Point {return world.E(p);});
   }

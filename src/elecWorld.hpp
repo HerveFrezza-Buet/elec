@@ -3,15 +3,14 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <iostream>
+#include <stdexcept>
 
 #include <elecArea.hpp>
 #include <elecPoint.hpp>
 #include <elecParticle.hpp>
 
 #include <ccmpl.hpp>
-#include <algorithm>
-
-#include <iostream>
 
 namespace elec {
   
@@ -21,6 +20,8 @@ namespace elec {
     Wall wall;
     std::vector<elec::Point> electrons;
     std::vector<elec::Point> protons;
+    ccmpl::chart::Limits2d limits2d;
+    bool limits2d_computed;
     
     void noisify(Point& e) {
       Point p;
@@ -40,7 +41,8 @@ namespace elec {
 
   public:
 
-    World() : areas(), all(), wall(20), electrons(), protons() {}
+    World() : areas(), all(), wall(20), electrons(), protons(),
+	      limits2d(), limits2d_computed(false) {}
 
 
     std::pair<Point,double> closest_electron_d2(const Point& p, const Point& exclude) {
@@ -131,6 +133,12 @@ namespace elec {
 	   - elec::E(electrons.begin(), electrons.end(), pos));
     }
 
+    double V(const Point& pos) {
+      return elecELEMENTARY_CHARGE
+	* (elec::V(protons.begin(), protons.end(), pos)
+	   - elec::V(electrons.begin(), electrons.end(), pos));
+    }
+
     template<typename Efunc>
     void move(const Efunc& E) {
       for(auto& e : electrons) move(e,E(e));
@@ -215,20 +223,49 @@ namespace elec {
       elec::Point m(margin,margin);
       bbox.first  -= m;
       bbox.second += m;
-      return {bbox.first.x, bbox.second.x, bbox.first.y, bbox.second.y};
+      limits2d = {bbox.first.x, bbox.second.x, bbox.first.y, bbox.second.y};
+      limits2d_computed = true;
+      return limits2d;
     }
 
     ccmpl::Dots plot_protons() {
-      return ccmpl::dots("c='r',lw=.5,s=10,marker='+',zorder=1", [this](std::vector<ccmpl::Point>& curve) {
+      return ccmpl::dots("c='r',lw=.5,s=10,marker='+',zorder=3", [this](std::vector<ccmpl::Point>& curve) {
 	  curve.clear();
 	  std::copy(this->protons.begin(), this->protons.end(), std::back_inserter(curve));
 	});
     }
+    
     ccmpl::Dots plot_electrons() {
-      return ccmpl::dots("c='g',lw=.5,s=10,marker='o',zorder=2", [this](std::vector<ccmpl::Point>& curve) {
+      return ccmpl::dots("c='g',lw=.5,s=10,marker='o',zorder=5", [this](std::vector<ccmpl::Point>& curve) {
 	  curve.clear();
 	  std::copy(this->electrons.begin(), this->electrons.end(), std::back_inserter(curve));
 	});
+    }
+    
+    ccmpl::Contours plot_V(double vmin, double vmax, unsigned int nb_contours,
+			   unsigned int nb_X, unsigned int nb_Y) {
+      if(!limits2d_computed)
+	throw std::runtime_error("plot_V requires the limits to be computed");
+      return ccmpl::contours("zorder=1", 0,
+			     [this, vmin, vmax, nb_X, nb_Y, nb_contours](std::vector<double>& z,
+									 double& xmin, double& xmax, unsigned int& nb_x,
+									 double& ymin, double& ymax, unsigned int& nb_y,
+									 double& zmin, double& zmax, unsigned int& nb_z) {
+			       z.clear();
+			       xmin = this->limits2d.xmin;
+			       xmax = this->limits2d.xmax;
+			       nb_x = nb_X;
+			       ymin = this->limits2d.ymin;
+			       ymax = this->limits2d.ymax;
+			       nb_y = nb_Y;
+			       zmin = vmin;
+			       zmax = vmax;
+			       nb_z = nb_contours;
+			       auto outz = std::back_inserter(z);
+			       for(auto y : ccmpl::range(ymin, ymax, nb_y))
+				 for(auto x : ccmpl::range(xmin, xmax, nb_x))
+				   *(outz++) = V(Point(x,y));
+			     });
     }
   };
 }
