@@ -1,5 +1,6 @@
 #pragma once
 
+#include <elecDipole.hpp>
 #include <elecParams.hpp>
 #include <elecPoint.hpp>
 #include <elecParticle.hpp>

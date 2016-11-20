@@ -9,6 +9,7 @@
 #include <elecArea.hpp>
 #include <elecPoint.hpp>
 #include <elecParticle.hpp>
+#include <elecDipole.hpp>
 
 #include <ccmpl.hpp>
 
@@ -20,6 +21,7 @@ namespace elec {
     Wall wall;
     std::vector<elec::Point> electrons;
     std::vector<elec::Point> protons;
+    std::vector<elec::Dipole> dipoles;
     ccmpl::chart::Limits2d limits2d;
     bool limits2d_computed;
     
@@ -129,19 +131,22 @@ namespace elec {
 
     Point E(const Point& pos) {
       return elecELEMENTARY_CHARGE
-	* (elec::E(protons.begin(), protons.end(), pos)
-	   - elec::E(electrons.begin(), electrons.end(), pos));
+	* (elec::E(  protons.begin(),   protons.end(),   pos)
+	   - elec::E(electrons.begin(), electrons.end(), pos)
+	   + elec::E(dipoles.begin(),   dipoles.end(),   pos));
     }
 
     double V(const Point& pos) {
       return elecELEMENTARY_CHARGE
-	* (elec::V(protons.begin(), protons.end(), pos)
-	   - elec::V(electrons.begin(), electrons.end(), pos));
+	* (elec::V   (protons.begin(),   protons.end(),   pos)
+	   - elec::V (electrons.begin(), electrons.end(), pos)
+	   + elec::V (dipoles.begin(),   dipoles.end(),   pos));
     }
 
     template<typename Efunc>
     void move(const Efunc& E) {
       for(auto& e : electrons) move(e,E(e));
+      for(auto& d : dipoles)  d.transfer(electrons.begin(), electrons.end());
     }
 
     unsigned int operator+=(elec::AreaRef area) {
@@ -149,6 +154,11 @@ namespace elec {
       areas.push_back({area,0});
       all += area;
       return res;
+    }
+
+    void add_dipole(const Point& at, double r, double angle,
+		    unsigned int nb) {
+      dipoles.push_back(Dipole(at,r,angle,nb));
     }
 
     void add_electron(const Point& pos) {

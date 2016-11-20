@@ -16,16 +16,31 @@ namespace elec {
     return std::rand()/(1.0+RAND_MAX) < p;
   }
 
+  // inline Point E(const Point& p, const Point& at) {
+  //   if(p == at)
+  //     return {0.,0.};
+  //   return (*(at-p))/std::max(d2(p,at),elecMIN_E_RADIUS*elecMIN_E_RADIUS);
+  // }
+
+  // inline double V(const Point& p, const Point& at) {
+  //   if(p == at)
+  //     return 0;
+  //   return 1/std::max(d(p,at),elecMIN_E_RADIUS);
+  // }
+  
   inline Point E(const Point& p, const Point& at) {
-    if(p == at)
+    double r2 = d2(p,at);
+    if(r2 < elecMIN_E_RADIUS*elecMIN_E_RADIUS)
       return {0.,0.};
-    return (*(at-p))/std::max(d2(p,at),elecMIN_E_RADIUS*elecMIN_E_RADIUS);
+    else
+      return (*(at-p))/r2;
   }
 
   inline double V(const Point& p, const Point& at) {
-    if(p == at)
+    double r = d(p,at);
+    if(r < elecMIN_E_RADIUS)
       return 0;
-    return 1/std::max(d(p,at),elecMIN_E_RADIUS);
+    return 1/r;
   }
 
   template<typename Iter>

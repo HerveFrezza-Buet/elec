@@ -273,8 +273,8 @@ namespace elec {
     double r2;
     Disk(const Point& O, double r, const Material& mat) : Conductor(mat), O(O), r(r), r2(r*r) {}
     virtual ~Disk() {}
-    virtual bool           in      (const Point& pos) const override {return d2(pos,O)<=r2;}
-    std::pair<Point,Point> bbox    ()                 const override {return {O-Point(r,r),O+Point(r,r)};}
+    virtual bool                   in      (const Point& pos) const override {return d2(pos,O)<=r2;}
+    virtual std::pair<Point,Point> bbox    ()                 const override {return {O-Point(r,r),O+Point(r,r)};}
   };
 
   AreaRef disk(const Point& O, double r, const Material& mat) {
@@ -286,12 +286,68 @@ namespace elec {
     Point min,max;
     Box(const Point& min, const Point& max, const Material& mat) : Conductor(mat), min(min), max(max) {}
     virtual ~Box() {}
-    virtual bool           in      (const Point& pos) const override {return min <= pos && pos <= max;}
-    std::pair<Point,Point> bbox    ()                 const override {return {min,max};}
+    virtual bool                   in      (const Point& pos) const override {return min <= pos && pos <= max;}
+    virtual std::pair<Point,Point> bbox    ()                 const override {return {min,max};}
   };
 
   AreaRef box(const Point& min, const Point& max, const Material& mat) {
     return AreaRef(static_cast<Area*>(new Box(min,max,mat)));
+  }
+
+  class Wire : public Conductor {
+  private:
+    Point min,max;
+    double r2;
+  public:
+    double r;
+    std::vector<Point> vertices;
+    Wire(const std::vector<Point>& vertices, double r, bool loop, const Material& mat)
+      : Conductor(mat), r2(r*r), r(r), vertices(vertices) {
+      min = *(vertices.cbegin());
+      max = min;
+      for(auto& pt : vertices) {
+	if(pt.x < min.x) min.x = pt.x;
+	else if(pt.x > max.x) max.x = pt.x;
+	if(pt.y < min.y) min.y = pt.y;
+	else if(pt.y > max.y) max.y = pt.y;
+      }
+      min -= {r,r};
+      max += {r,r};
+      
+      if(loop)
+	this->vertices.push_back(*(vertices.cbegin()));
+    }
+    virtual ~Wire() {}
+    
+    virtual bool in(const Point& pos) const override {
+      auto ita = vertices.begin();
+      double r2 = r*r;
+      for(auto itb = ita+1; itb != vertices.end(); ita = itb++) {
+	Point   A = *ita;
+	Point   B = *itb;
+	Point   u = *(B-A);
+	double l2 = d2(A,B);
+	double  l = sqrt(l2);
+	double  dd;
+
+	double lambda = u*(pos-A);
+	if(lambda < 0)
+	  dd = d2(A,pos);
+	else if(lambda > l)
+	  dd = d2(B,pos);
+	else
+	  dd = d2(A+u*lambda, pos);
+	if(dd < r2)
+	  return true;
+      }
+      return false;
+    }
+    
+    virtual std::pair<Point,Point> bbox() const override {return {min,max};}
+  };
+
+  AreaRef wire(const std::vector<Point>& vertices, double r, bool loop, const Material& mat) {
+    return AreaRef(static_cast<Area*>(new Wire(vertices,r,loop,mat)));
   }
 
   
