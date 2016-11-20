@@ -19,18 +19,17 @@
 #define PLOT_V_NB_X      60
 #define PLOT_V_NB_Y      30
 
-#define PLOT_E_NB_X      30
-#define PLOT_E_NB_Y      15
-#define PLOT_E_COEF      3e-3
 
 //#define SHOW_E
 
 int main(int argc, char* argv[]) {
   elec::Main m(argc,argv,"example-001");
 
-  auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, elec::metal());
-  auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, elec::metal());
-  auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), elec::metal());
+  auto material = elec::material(1.0,.33,.05);
+
+  auto left  = elec::disk(elec::Point(-RADIUS1,        0),                       RADIUS2, material);
+  auto right = elec::disk(elec::Point( RADIUS1,        0),                       RADIUS2, material);
+  auto bar   = elec::box (elec::Point(-RADIUS1, -RADIUS3), elec::Point(RADIUS1, RADIUS3), material);
   auto group = elec::set ({left,bar,right});
 
   elec::World world;

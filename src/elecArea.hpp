@@ -235,6 +235,10 @@ namespace elec {
     double mobility    = 0;
     double density     = 0;
     double min_d2      = 0;
+    /**
+       @param mobility
+       @param density in [0,1]. 
+     */
     Material(double mobility, double density, double min_d) 
       : mobility(mobility), density(density), min_d2(min_d*min_d) {}
     Material(const Material&) = default;

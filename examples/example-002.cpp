@@ -14,7 +14,7 @@
 
 #define PLOT_V_MIN      -10
 #define PLOT_V_MAX       10
-#define PLOT_V_NB_ISO    10
+#define PLOT_V_NB_ISO    20
 #define PLOT_V_NB_X      60
 #define PLOT_V_NB_Y      30
 
